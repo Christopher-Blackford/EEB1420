@@ -111,7 +111,7 @@ output=lsoda(y = variables0,    # intial values
 ########################################################################
 ########################################################################
 #[4] Plotting
-colnames(output)=c("time","S1_A", "S1_B", "S1_C", "S1_D")
+#colnames(output)=c("time","S1_A", "S1_B", "S1_C", "S1_D")
 Metapop_model=as.data.frame(output)
 
 
