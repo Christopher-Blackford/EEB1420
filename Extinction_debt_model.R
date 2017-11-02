@@ -31,7 +31,7 @@ full.run.time <- proc.time() # time for one run-through
 #Initializing showing how you want r to vary over time, and what your intial population size will be
 
 #How do you want the r to vary over time? (r > 0 = population increasing, r < 0 = population decreasing)
-r_loop <- rnorm(20, mean = 0.02, sd = 0.04)
+r_loop <- rnorm(20, mean = 0.02, sd = 0.1)
 r_loop[1] <- 0.02
 
 #Setting up dataframe to capture intial and final population sizes to feed into runs when you loop
@@ -50,7 +50,7 @@ Model_output_names[i] <- append(paste0("loop_", i), Model_output_names)
 }
 
 #How long should each loop run for?
-time_of_loop <- length(r_loop)
+time_of_loop <- 20
 
 ########################################################################
 ########################################################################
