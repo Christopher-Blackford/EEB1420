@@ -24,13 +24,41 @@ require(ggplot2)
 rm(list=ls())
 full.run.time <- proc.time() # time for one run-through
 
+
+########################################################################
+########################################################################
+#Initializing showing how you want r to vary over time, and what your intial population size will be
+
+#How do you want the r to vary over time? (r > 0 = population increasing, r < 0 = population decreasing)
+r_loop <- rnorm(20, mean = 0.02, sd = 0.04)
+r_loop[1] <- 0.02
+
+#Setting up dataframe to capture intial and final population sizes to feed into runs when you loop
+population_loop <- matrix(0, nrow = length(r_loop), ncol = 4)
+
+#These are the initial population sizes for the different patches
+population_loop[1,1] <- 20 
+population_loop[1,2] <- 5
+population_loop[1,3] <- 0
+population_loop[1,4] <- 0
+
+#This a a vector that I'm using to give names to the different loop outputs
+Model_output_names <- NULL
+for (i in 1:length(r_loop)){
+Model_output_names[i] <- append(paste0("loop_", i), Model_output_names)
+}
+
+#How long should each loop run for?
+time_of_loop <- length(r_loop)
+
 ########################################################################
 ########################################################################
 #[1] Setting up the model
 
+for (i in 1:length(r_loop)){
+
 ##### Model description  #####
-SISmodel=function(t,y,parameters) 
-{ 
+SISmodel=function(t,y,parameters){ 
   ## Variables
   S1_A=y[1]; S1_B=y[2]; S1_C=y[3]; S1_D=y[4]
   
@@ -66,7 +94,7 @@ SISmodel=function(t,y,parameters)
 ########################################################################
 ########################################################################
 #[2] Parameter values
-r <- 1.05
+r <- r_loop[i] #r value will change with each loop
 K <- 5000
 m_AB <- 0.01 #Setting all migration rates equal
 m_AD = m_AB
@@ -84,10 +112,13 @@ m_DC = m_AB
 #[3] Running the model
 
 ## Initial state
-variables0=c(S1_A0=20, S1_B0=5, S1_C0=0, S1_D0=0)
+variables0=c(S1_A0=population_loop[i,1],
+             S1_B0=population_loop[i,2],
+             S1_C0=population_loop[i,3],
+             S1_D0=population_loop[i,4]) #Initial population size will be updated for each loop
 
 ## Times at which estimates of the variables are returned
-timevec=seq(0,20,1)
+timevec=seq(0,time_of_loop,1) #Defines how long to run the model before looping
 
 parameters=c(r,
              K,
@@ -110,19 +141,42 @@ output=lsoda(y = variables0,    # intial values
 
 ########################################################################
 ########################################################################
-#[4] Plotting
-#colnames(output)=c("time","S1_A", "S1_B", "S1_C", "S1_D")
+#[4] Getting output into dataframe
+colnames(output)=c("time","S1_A", "S1_B", "S1_C", "S1_D")
 Metapop_model=as.data.frame(output)
+Metapop_model$loop_number <- i
+
+assign(Model_output_names[i], Metapop_model)
 
 
-Linear_plot <- ggplot(Metapop_model, aes(time)) +
+if (i < length(r_loop)){
+population_loop[i+1,1] <- Metapop_model$S1_A[nrow(Metapop_model)]
+population_loop[i+1,2] <- Metapop_model$S1_B[nrow(Metapop_model)]
+population_loop[i+1,3] <- Metapop_model$S1_C[nrow(Metapop_model)]
+population_loop[i+1,4] <- Metapop_model$S1_D[nrow(Metapop_model)]
+}
+
+else print("Done")
+
+}
+
+
+
+Model_output <- lapply(ls(pattern=paste0("loop_")), function(x) get(x))
+Model_output <- do.call(rbind, Model_output)
+Model_output <- Model_output[with(Model_output, order(loop_number, time)),]
+Model_output$time_loop <- Model_output$time
+Model_output$time <- 1:nrow(Model_output)
+
+
+Linear_plot <- ggplot(Model_output, aes(time)) +
   geom_line(aes(y = S1_A, colour = "Species 1, patch A")) + 
   geom_line(aes(y = S1_B, colour = "Species 1, patch B")) +
   geom_line(aes(y = S1_C, colour = "Species 1, patch C")) +
   geom_line(aes(y = S1_D, colour = "Species 1, patch D")) +
   labs(title = "", x = "Time", y = "Population size")
 
-Linear_plot + theme(
+Linear_plot <- Linear_plot + theme(
   plot.title = element_text(size = 16), 
   axis.text = element_text(size = 16),
   axis.title = element_text(size = 16),
@@ -131,5 +185,4 @@ Linear_plot + theme(
   panel.background = element_blank()
 )
 
-
-
+Linear_plot
