@@ -8,6 +8,7 @@
 #This file models metapopulation dynamics of extinction debt
 
 ###################TABLE OF CONTENTS
+###Initializing
 ###[1] Setting up the model
 ###[2] Running model
 
