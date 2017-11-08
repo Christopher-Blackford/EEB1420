@@ -48,9 +48,17 @@ for (time_loop in 1:number_of_simulations){ #defines number of simulations to ru
 #[2] Defining model parameters
 
 #How do you want the r to vary over time? (r > 0 = population increasing, r < 0 = population decreasing)
+
+#For different r in each patch
+r_list <- c("rA", "rB", "rC", "rD")
+
+for (r_listing in 1:length(r_list)){
 r_mean <- 0.02 #r grows at "x" percent per time step
 r_loop <- rnorm(20, mean = r_mean, sd = sqrt(r_mean)) #this is a poisson where the mean = variance?
 r_loop[1] <- r_mean
+assign(r_list[r_listing], r_loop)
+}
+
 
 #Setting up dataframe to capture intial and final population sizes to feed into runs when you loop
 population_loop <- matrix(0, nrow = length(r_loop), ncol = 4)
@@ -82,25 +90,28 @@ SISmodel=function(t,y,parameters){
   S1_A=y[1]; S1_B=y[2]; S1_C=y[3]; S1_D=y[4]
   
   ## Parameters
-  r = parameters[1];
-  K = parameters[2];
-  m_AB = parameters[3];
-  m_AD = parameters[4];
-  m_BA = parameters[5];
-  m_BC = parameters[6];
-  m_CB = parameters[7];  
-  m_CD = parameters[8];  
-  m_DA = parameters[9];  
-  m_DC = parameters[10]; 
+  rA = parameters[1];
+  rB = parameters[2];
+  rC = parameters[3];
+  rD = parameters[4];
+  K = parameters[5];
+  m_AB = parameters[6];
+  m_AD = parameters[7];
+  m_BA = parameters[8];
+  m_BC = parameters[9];
+  m_CB = parameters[10];  
+  m_CD = parameters[11];  
+  m_DA = parameters[12];  
+  m_DC = parameters[13]; 
   
   ## Ordinary differential equations
-  dS1_Adt <- r*S1_A*(1 - S1_A/K) + S1_B*m_BA + S1_D*m_DA - S1_A*(m_AB + m_AD)
+  dS1_Adt <- rA*S1_A*(1 - S1_A/K) + S1_B*m_BA + S1_D*m_DA - S1_A*(m_AB + m_AD)
   
-  dS1_Bdt <- r*S1_B*(1 - S1_B/K) + S1_A*m_AB + S1_C*m_CB - S1_B*(m_BA + m_BC)
+  dS1_Bdt <- rB*S1_B*(1 - S1_B/K) + S1_A*m_AB + S1_C*m_CB - S1_B*(m_BA + m_BC)
   
-  dS1_Cdt <- r*S1_C*(1 - S1_C/K) + S1_B*m_BC + S1_D*m_DC - S1_C*(m_CB + m_DC)
+  dS1_Cdt <- rC*S1_C*(1 - S1_C/K) + S1_B*m_BC + S1_D*m_DC - S1_C*(m_CB + m_DC)
   
-  dS1_Ddt <- r*S1_D*(1 - S1_D/K) + S1_A*m_AD + S1_C*m_CD - S1_D*(m_DA + m_DC)
+  dS1_Ddt <- rD*S1_D*(1 - S1_D/K) + S1_A*m_AD + S1_C*m_CD - S1_D*(m_DA + m_DC)
   
   
   return(list(c(dS1_Adt,
@@ -110,9 +121,12 @@ SISmodel=function(t,y,parameters){
 }  
 
 ###[3b] Parameter values
-r <- r_loop[i] #r value will change with each loop
+rA <- rA_loop[i] #r value will change with each loop
+rB <- rB_loop[i]
+rC <- rC_loop[i]
+rD <- rD_loop[i]
 K <- 5000
-m_AB <- 0.01 #Setting all migration rates equal
+m_AB <- 0 #Setting all migration rates equal
 m_AD = m_AB
 m_BA = m_AB
 m_BC = m_AB
@@ -136,7 +150,10 @@ variables0=c(S1_A0=population_loop[i,1],
 #Times at which estimates of the variables are returned
 timevec=seq(0,time_of_loop,1) #Defines how long to run the model before looping
 
-parameters=c(r,
+parameters=c(rA,
+             rB,
+             rC,
+             rD,
              K,
              m_AB,
              m_AD,
