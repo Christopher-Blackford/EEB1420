@@ -39,7 +39,7 @@ full.run.time <- proc.time() # time for one run-through
 #[1] Defining number of simulations you will be running
 
 time_quasi_extinct <- NULL #Time to quasi-extinction vector
-number_of_simulations <- 100
+number_of_simulations <- 10000
 
 for (time_loop in 1:number_of_simulations){ #defines number of simulations to run
 
@@ -111,7 +111,7 @@ SISmodel=function(t,y,parameters){
 
 ###[3b] Parameter values
 r <- r_loop[i] #r value will change with each loop
-K <- 5000
+K <- 5000 #change to simulate patch size?
 m_AB <- 0.01 #Setting all migration rates equal
 m_AD = m_AB
 m_BA = m_AB
@@ -186,6 +186,7 @@ Model_output$time <- 1:nrow(Model_output)
 ########################################################################
 #[6] Plotting time to extinction across model simulations
 
+#make clearer
 for (i in 1:nrow(Model_output)){
   if (Model_output[i,2] < 100){
     time_quasi_extinct <- append(time_quasi_extinct, Model_output[i,1])
@@ -203,8 +204,8 @@ else if (time_loop == ceiling(number_of_simulations*0.75)){
   print("75%")}
 else if (time_loop == ceiling(number_of_simulations)){
   print("Done")}
-  
 } #closing time_loop
+
 
 hist(time_quasi_extinct, breaks = 40) 
 
