@@ -50,12 +50,10 @@ for (time_loop in 1:number_of_simulations){ #defines number of simulations to ru
 #How do you want the r to vary over time? (r > 0 = population increasing, r < 0 = population decreasing)
 
 #For different r in each patch
-r_list <- c("rA", "rB", "rC", "rD")
-
+r_list <- c("rA_loop", "rB_loop", "rC_loop", "rD_loop")
 for (r_listing in 1:length(r_list)){
-r_mean <- 0.02 #r grows at "x" percent per time step
-r_loop <- rnorm(20, mean = r_mean, sd = sqrt(r_mean)) #this is a poisson where the mean = variance?
-r_loop[1] <- r_mean
+r_mean <- 0.005 #r grows at "x" percent per time step
+r_loop <- rnorm(500, mean = r_mean, sd = 0.04) #this is a poisson where the mean = variance?
 assign(r_list[r_listing], r_loop)
 }
 
@@ -75,9 +73,11 @@ for (i in 1:length(r_loop)){
 Model_output_names[i] <- append(paste0("loop_", i), Model_output_names)
 }
 
-#How long should each loop run for?
-time_of_loop <- 20
 
+#How long should each loop run for?
+time_of_loop <- 1
+
+rm(r_list, r_listing) #removing usless variables
 ########################################################################
 ########################################################################
 #[3] Building model structure
@@ -126,7 +126,7 @@ rB <- rB_loop[i]
 rC <- rC_loop[i]
 rD <- rD_loop[i]
 K <- 5000
-m_AB <- 0 #Setting all migration rates equal
+m_AB <- 0.0001 #Setting all migration rates equal
 m_AD = m_AB
 m_BA = m_AB
 m_BC = m_AB
@@ -142,10 +142,11 @@ m_DC = m_AB
 #[4] Running the model
 
 #Initial state
+#Need to do this so that it takes the initial starting size the first time, and then the output from the last fun the next time
 variables0=c(S1_A0=population_loop[i,1],
-             S1_B0=population_loop[i,2],
-             S1_C0=population_loop[i,3],
-             S1_D0=population_loop[i,4]) #Initial population size will be updated for each loop
+                     S1_B0=population_loop[i,2],
+                     S1_C0=population_loop[i,3],
+                     S1_D0=population_loop[i,4]) #Initial population size will be updated for each loop
 
 #Times at which estimates of the variables are returned
 timevec=seq(0,time_of_loop,1) #Defines how long to run the model before looping
@@ -178,10 +179,12 @@ output=lsoda(y = variables0,    # intial values
 colnames(output)=c("time","S1_A", "S1_B", "S1_C", "S1_D")
 Metapop_model=as.data.frame(output)
 Metapop_model$loop_number <- i
-
+#Need to remove the way the output is structure since the first row is a repetition of previous abundances
+if (i > 1){Metapop_model = Metapop_model[-1,]}
 assign(Model_output_names[i], Metapop_model)
 
 
+#I don't think I need this, it should update by itself?
 if (i < length(r_loop)){
 population_loop[i+1,1] <- Metapop_model$S1_A[nrow(Metapop_model)]
 population_loop[i+1,2] <- Metapop_model$S1_B[nrow(Metapop_model)]
@@ -222,8 +225,9 @@ else if (time_loop == ceiling(number_of_simulations)){
   print("Done")}
   
 } #closing time_loop
+min(Model_output$S1_A)
 
-hist(time_quasi_extinct, breaks = 40) 
+hist(time_quasi_extinct, breaks = 1) 
 
 
 proc.time() - full.run.time
