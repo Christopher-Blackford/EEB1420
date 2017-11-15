@@ -53,7 +53,7 @@ for (time_loop in 1:number_of_simulations){ #defines number of simulations to ru
 r_list <- c("rA_loop", "rB_loop", "rC_loop", "rD_loop")
 for (r_listing in 1:length(r_list)){
 r_mean <- 0.005 #r grows at "x" percent per time step
-r_loop <- rnorm(500, mean = r_mean, sd = 0.04) #this is a poisson where the mean = variance?
+r_loop <- rnorm(500, mean = r_mean, sd = 0.1) #this is a poisson where the mean = variance?
 assign(r_list[r_listing], r_loop)
 }
 
@@ -227,7 +227,7 @@ else if (time_loop == ceiling(number_of_simulations)){
 } #closing time_loop
 min(Model_output$S1_A)
 
-hist(time_quasi_extinct, breaks = 1) 
+hist(time_quasi_extinct, breaks = 100) 
 
 
 proc.time() - full.run.time
