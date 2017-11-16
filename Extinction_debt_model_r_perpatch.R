@@ -18,7 +18,8 @@
 ###[3] Building model structure
 ###[4] Running the model
 ###[5] Getting model output into dataframe/plotting single simulation results
-###[6] Plotting time to extinction across model simulations
+###[6] Getting time to extinction for a run
+###[7] Plotting time to extinction across model simulations
 
 ###################Loading in libraries
 require(deSolve)
@@ -39,7 +40,7 @@ full.run.time <- proc.time() # time for one run-through
 #[1] Defining number of simulations you will be running
 
 time_quasi_extinct <- NULL #Time to quasi-extinction vector
-number_of_simulations <- 10000
+number_of_simulations <- 100000
 
 for (time_loop in 1:number_of_simulations){ #defines number of simulations to run
 
@@ -52,7 +53,7 @@ for (time_loop in 1:number_of_simulations){ #defines number of simulations to ru
 #For different r in each patch
 r_list <- c("rA_loop", "rB_loop", "rC_loop", "rD_loop")
 for (r_listing in 1:length(r_list)){
-r_mean <- 0.05 #r grows at "x" percent per time step
+r_mean <- 0.02 #r grows at "x" percent per time step
 r_loop <- rnorm(500, mean = r_mean, sd = 1.5*sqrt(r_mean)) #this is a poisson where the mean = variance?
 assign(r_list[r_listing], r_loop)
 }
@@ -201,10 +202,9 @@ Model_output <- Model_output[with(Model_output, order(loop_number, time)),]
 Model_output$time_loop <- Model_output$time
 Model_output$time <- 1:nrow(Model_output)
 
-
 ########################################################################
 ########################################################################
-#[6] Plotting time to extinction across model simulations
+#[6] Getting time to extinction for a run
 
 for (i in 1:nrow(Model_output)){
   if (Model_output[i,2] < K/20){
@@ -213,8 +213,7 @@ for (i in 1:nrow(Model_output)){
   } #don't need an else statement
 }
 
-########################################################################
-#Progress bar
+###Progress bar
 if (time_loop == ceiling(number_of_simulations*0.25)){
   print("25%")}
 else if (time_loop == ceiling(number_of_simulations*0.50)){
@@ -223,13 +222,54 @@ else if (time_loop == ceiling(number_of_simulations*0.75)){
   print("75%")}
 else if (time_loop == ceiling(number_of_simulations)){
   print("Done")}
-  
+
 } #closing time_loop
 
-length(time_quasi_extinct)
-hist(time_quasi_extinct, breaks = length(time_quasi_extinct)) 
-d <- density(time_quasi_extinct)
-plot(d)
+
+########################################################################
+########################################################################
+#[7] Plotting time to extinction across model simulations
+
+Time_to_extinction_df <- as.data.frame(time_quasi_extinct)
+
+###Histogram
+plot_title <- paste0("Histogram r_mean = ", r_mean, ", K =", K)
+
+Time_to_extinction_plot <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
+  geom_histogram(colour = "Black", bins = nrow(Model_output)/2)+
+  labs(title = plot_title, x = "Time to extinction", y = "Frequency")
+
+Time_to_extinction_plot <- Time_to_extinction_plot + theme(
+  plot.title = element_text(size = 16), 
+  axis.text = element_text(size = 14),
+  axis.title = element_text(size = 14),
+  axis.line = element_line("black"),
+  legend.title = element_blank(),
+  panel.background = element_blank()
+)
+Time_to_extinction_plot
+
+ggsave(paste0("./output/figures/", plot_title, ".png"), width = 10, height = 6)
+
+###Frequency histogram
+plot_title <- paste0("Frequency r_mean = ", r_mean, ", K =", K)
+
+Time_to_extinction_freq <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
+  geom_freqpoly(colour = "Black", bins = nrow(Model_output)/10)+
+  labs(title = plot_title, x = "Time to extinction", y = "Frequency")
+
+Time_to_extinction_freq <- Time_to_extinction_freq + theme(
+  plot.title = element_text(size = 16), 
+  axis.text = element_text(size = 14),
+  axis.title = element_text(size = 14),
+  axis.line = element_line("black"),
+  legend.title = element_blank(),
+  panel.background = element_blank()
+)
+Time_to_extinction_freq
+
+ggsave(paste0("./output/figures/", plot_title, ".png"), width = 10, height = 6)
+
 
 proc.time() - full.run.time
 #####
@@ -237,3 +277,12 @@ proc.time() - full.run.time
 ###
 ##
 #END
+
+
+
+
+
+
+#Extra
+#length(time_quasi_extinct)
+#hist(time_quasi_extinct, breaks = length(time_quasi_extinct)) 
