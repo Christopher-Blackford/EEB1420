@@ -39,7 +39,7 @@ full.run.time <- proc.time() # time for one run-through
 #[1] Defining number of simulations you will be running
 
 time_quasi_extinct <- NULL #Time to quasi-extinction vector
-number_of_simulations <- 100
+number_of_simulations <- 10000
 
 for (time_loop in 1:number_of_simulations){ #defines number of simulations to run
 
@@ -52,8 +52,8 @@ for (time_loop in 1:number_of_simulations){ #defines number of simulations to ru
 #For different r in each patch
 r_list <- c("rA_loop", "rB_loop", "rC_loop", "rD_loop")
 for (r_listing in 1:length(r_list)){
-r_mean <- 0.005 #r grows at "x" percent per time step
-r_loop <- rnorm(500, mean = r_mean, sd = 0.1) #this is a poisson where the mean = variance?
+r_mean <- 0.05 #r grows at "x" percent per time step
+r_loop <- rnorm(500, mean = r_mean, sd = 1.5*sqrt(r_mean)) #this is a poisson where the mean = variance?
 assign(r_list[r_listing], r_loop)
 }
 
@@ -207,7 +207,7 @@ Model_output$time <- 1:nrow(Model_output)
 #[6] Plotting time to extinction across model simulations
 
 for (i in 1:nrow(Model_output)){
-  if (Model_output[i,2] < 100){
+  if (Model_output[i,2] < K/20){
     time_quasi_extinct <- append(time_quasi_extinct, Model_output[i,1])
     break
   } #don't need an else statement
@@ -225,10 +225,11 @@ else if (time_loop == ceiling(number_of_simulations)){
   print("Done")}
   
 } #closing time_loop
-min(Model_output$S1_A)
 
-hist(time_quasi_extinct, breaks = 100) 
-
+length(time_quasi_extinct)
+hist(time_quasi_extinct, breaks = length(time_quasi_extinct)) 
+d <- density(time_quasi_extinct)
+plot(d)
 
 proc.time() - full.run.time
 #####
