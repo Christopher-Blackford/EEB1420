@@ -39,8 +39,10 @@ full.run.time <- proc.time() # time for one run-through
 ########################################################################
 #[1] Defining number of simulations you will be running
 
+pnorm(0,mean=0.05,sd=0.2) #calculate percent of bad years (where r< 0) given mean and sd
+
 time_quasi_extinct <- NULL #Time to quasi-extinction vector
-number_of_simulations <- 100000
+number_of_simulations <- 100
 
 for (time_loop in 1:number_of_simulations){ #defines number of simulations to run
 
@@ -53,8 +55,8 @@ for (time_loop in 1:number_of_simulations){ #defines number of simulations to ru
 #For different r in each patch
 r_list <- c("rA_loop", "rB_loop", "rC_loop", "rD_loop")
 for (r_listing in 1:length(r_list)){
-r_mean <- 0.02 #r grows at "x" percent per time step
-r_loop <- rnorm(500, mean = r_mean, sd = 1.5*sqrt(r_mean)) #this is a poisson where the mean = variance?
+r_mean <- 0.05 #r grows at "x" percent per time step
+r_loop <- rnorm(500, mean = r_mean, sd = 0.5) #this is a poisson where the mean = variance?
 assign(r_list[r_listing], r_loop)
 }
 
@@ -63,10 +65,10 @@ assign(r_list[r_listing], r_loop)
 population_loop <- matrix(0, nrow = length(r_loop), ncol = 4)
 
 #These are the initial population sizes for the different patches
-population_loop[1,1] <- 2500 
-population_loop[1,2] <- 2500
-population_loop[1,3] <- 2500
-population_loop[1,4] <- 2500
+population_loop[1,1] <- 500/4 
+population_loop[1,2] <- 500/4
+population_loop[1,3] <- 500/4
+population_loop[1,4] <- 500/4
 
 #This a a vector that I'm using to give names to the different loop outputs
 Model_output_names <- NULL
@@ -126,7 +128,7 @@ rA <- rA_loop[i] #r value will change with each loop
 rB <- rB_loop[i]
 rC <- rC_loop[i]
 rD <- rD_loop[i]
-K <- 5000
+K <- 500
 m_AB <- 0.0001 #Setting all migration rates equal
 m_AD = m_AB
 m_BA = m_AB
@@ -202,6 +204,7 @@ Model_output <- Model_output[with(Model_output, order(loop_number, time)),]
 Model_output$time_loop <- Model_output$time
 Model_output$time <- 1:nrow(Model_output)
 
+rm(list=ls(pattern="loop_")) #Removing needless loop files
 ########################################################################
 ########################################################################
 #[6] Getting time to extinction for a run
@@ -233,7 +236,7 @@ else if (time_loop == ceiling(number_of_simulations)){
 Time_to_extinction_df <- as.data.frame(time_quasi_extinct)
 
 ###Histogram
-plot_title <- paste0("Histogram r_mean = ", r_mean, ", K =", K)
+plot_title <- paste0("Histogram r_mean = ", r_mean, ", K =", K, " Num_sims =", number_of_simulations)
 
 Time_to_extinction_plot <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
   geom_histogram(colour = "Black", bins = nrow(Model_output)/2)+
@@ -252,7 +255,7 @@ Time_to_extinction_plot
 ggsave(paste0("./output/figures/", plot_title, ".png"), width = 10, height = 6)
 
 ###Frequency histogram
-plot_title <- paste0("Frequency r_mean = ", r_mean, ", K =", K)
+plot_title <- paste0("Frequency r_mean = ", r_mean, ", K =", K, " Num_sims =", number_of_simulations)
 
 Time_to_extinction_freq <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
   geom_freqpoly(colour = "Black", bins = nrow(Model_output)/10)+
