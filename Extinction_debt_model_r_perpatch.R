@@ -34,33 +34,48 @@ require(ggplot2)
 rm(list=ls())
 full.run.time <- proc.time() # time for one run-through
 
+
 pnorm(0,mean=0.2, sd=0.35) #calculate percent of bad years (where r< 0) given mean and sd
 
-number_of_simulations <- 1000
+########################################################################
+########################################################################
+#[0] Defining Parameters
+number_of_simulations <- 10000
+
+r_mean <- 0.2 #r grows at "x" percent per time step
+
+r_sd <- 0.35
+
+#Defining K
+K_all <- 5000
+
+#Defining m (migration)
+m_all <- 0.005
+
+#How long should each loop run for?
+time_of_loop <- 1
+
+#Quasi-extinction threshold
+extinction_threshold <- K_all/10 #10% of carrying capacity
 
 ########################################################################
 ########################################################################
-#[2] Defining number of simulations you will be running
+#[1] Defining number of simulations you will be running
 
 time_quasi_extinct <- NULL #Time to quasi-extinction vector
 for (time_loop in 1:number_of_simulations){ #defines number of simulations to run
 
 ########################################################################
 ########################################################################
-#[1] Defining model parameters
+#[2] Looping model parameters
   
 #For different r in each patch
 r_list <- c("rA_loop", "rB_loop", "rC_loop", "rD_loop")
 for (r_listing in 1:length(r_list)){
-r_mean <- 0.2 #r grows at "x" percent per time step
-r_loop <- rnorm(500, mean = r_mean, sd = 0.35) 
+r_loop <- rnorm(500, mean = r_mean, sd = r_sd) 
 assign(r_list[r_listing], r_loop)}
 
 
-#Defining K
-K_all <- 5000
-  
-  
 #Setting up dataframe to capture intial and final population sizes to feed into runs when you loop
 population_loop <- matrix(0, nrow = length(r_loop), ncol = 4)
 #These are the initial population sizes for the different patches
@@ -72,10 +87,8 @@ population_loop[1,4] <- K_all/2
 #This a a vector that I'm using to give names to the different loop outputs
 Model_output_names <- NULL
 for (i in 1:length(r_loop)){Model_output_names[i] <- append(paste0("loop_", i), Model_output_names)}
-  
-#How long should each loop run for?
-time_of_loop <- 1
-  
+
+
 rm(r_list, r_listing) #removing usless variables
 #######################################################################
 ########################################################################
@@ -128,7 +141,7 @@ rB <- rB_loop[i]
 rC <- rC_loop[i]
 rD <- rD_loop[i]
 K <- K_all
-m_AB <- 0.005 #Setting all migration rates equal
+m_AB <- m_all #Setting all migration rates equal
 m_AD = m_AB
 m_BA = m_AB
 m_BC = m_AB
@@ -189,10 +202,10 @@ Metapop_model=as.data.frame(output)
 Metapop_model$loop_number <- i
 #Need to remove the way the output is structure since the first row is a repetition of previous abundances
 if (i > 1){Metapop_model = Metapop_model[-1,]}
-assign(Model_output_names[i], Metapop_model)
+assign(Model_output_names[i], Metapop_model) #adding on time period to previous time step
 
 
-#I don't think I need this, it should update by itself?
+#Start next simulation and end of previous simulation
 if (i < length(r_loop)){
 population_loop[i+1,1] <- Metapop_model$S1_A[nrow(Metapop_model)]
 population_loop[i+1,2] <- Metapop_model$S1_B[nrow(Metapop_model)]
@@ -215,7 +228,7 @@ rm(list=ls(pattern="loop_")) #Removing needless loop files
 #[6] Getting time to extinction for a run
 
 for (i in 1:nrow(Model_output)){
-  if (Model_output[i,2] < K/10){
+  if (Model_output[i,2] < extinction_threshold){
     time_quasi_extinct <- append(time_quasi_extinct, Model_output[i,1])
     break
   } #don't need an else statement
@@ -241,7 +254,7 @@ else if (time_loop == ceiling(number_of_simulations)){
 Time_to_extinction_df <- as.data.frame(time_quasi_extinct)
 
 ###Histogram
-plot_title <- paste0("Histogram r_mean = ", r_mean, ", K =", K, " Num_sims =", number_of_simulations)
+plot_title <- paste0("Histogram r_mean = ", r_mean, "r_sd = ", r_sd, ", K =", K_all, " Num_sims =", number_of_simulations)
 
 Time_to_extinction_plot <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
   geom_histogram(colour = "Black", bins = nrow(Model_output)/4)+
@@ -260,7 +273,7 @@ Time_to_extinction_plot
 ggsave(paste0("./output/figures/", plot_title, ".png"), width = 10, height = 6)
 
 ###Frequency histogram
-plot_title <- paste0("Frequency r_mean = ", r_mean, ", K =", K, " Num_sims =", number_of_simulations)
+plot_title <- paste0("Frequency r_mean = ", r_mean, "r_sd = ", r_sd, ", K =", K_all, " Num_sims =", number_of_simulations)
 
 Time_to_extinction_freq <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
   geom_freqpoly(colour = "Black", bins = nrow(Model_output)/10)+
