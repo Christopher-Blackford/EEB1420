@@ -44,12 +44,12 @@ pnorm(0,mean=0.2, sd=0.35) #calculate percent of bad years (where r< 0) given me
 number_of_simulations <- 10000  #How many simulations to do
 years_each_run <- 500 #How long should each simulation run for
 
-r_mean <- 0.18 #r grows at "x" percent per time step
+r_mean <- c(0.15, 0.10) #r grows at "x" percent per time step
 
 r_sd <- 0.35
 
 #Defining K
-K_all <- 5000
+K_all <- c(5000, 4500, 37500, 2500)
 
 #Defining m (migration)
 m_all <- 0.005
@@ -58,7 +58,12 @@ m_all <- 0.005
 time_of_loop <- 1
 
 #Quasi-extinction threshold
-extinction_threshold <- K_all/10 #10% of carrying capacity
+extinction_threshold <- 500 #10% of carrying capacity
+
+
+for (Multiple_r_scenarios in 1:length(r_mean)){
+  for (Multiple_K_scenarios in 1:length(K_all)){
+    
 
 ########################################################################
 ########################################################################
@@ -74,17 +79,17 @@ for (simulation_dummy in 1:number_of_simulations){
 #For different r in each patch
 r_list <- c("rA_loop", "rB_loop", "rC_loop", "rD_loop")
 for (r_listing in 1:length(r_list)){
-r_loop <- rnorm(years_each_run, mean = r_mean, sd = r_sd) 
+r_loop <- rnorm(years_each_run, mean = r_mean[Multiple_r_scenarios], sd = r_sd) 
 assign(r_list[r_listing], r_loop)}
 
 
 #Setting up dataframe to capture intial and final population sizes to feed into runs when you loop
 population_loop <- matrix(0, nrow = length(r_loop), ncol = 4)
 #These are the initial population sizes for the different patches
-population_loop[1,1] <- K_all/2 
-population_loop[1,2] <- K_all/2
-population_loop[1,3] <- K_all/2
-population_loop[1,4] <- K_all/2
+population_loop[1,1] <- K_all[Multiple_K_scenarios]/2 
+population_loop[1,2] <- K_all[Multiple_K_scenarios]/2
+population_loop[1,3] <- K_all[Multiple_K_scenarios]/2
+population_loop[1,4] <- K_all[Multiple_K_scenarios]/2
   
 #This a a vector that I'm using to give names to the different loop outputs
 Model_output_names <- NULL
@@ -141,7 +146,7 @@ rA <- rA_loop[i] #r value will change with each loop
 rB <- rB_loop[i]
 rC <- rC_loop[i]
 rD <- rD_loop[i]
-K <- K_all
+K <- K_all[Multiple_K_scenarios]
 m_AB <- m_all #Setting all migration rates equal
 m_AD = m_AB
 m_BA = m_AB
@@ -253,11 +258,11 @@ else if (simulation_dummy == ceiling(number_of_simulations)){
 #[8] Plotting time to extinction across model simulations
 
 Time_to_extinction_df <- as.data.frame(time_quasi_extinct)
-write.csv(Time_to_extinction_df, file = paste0("./output/time_to_extinction_df/TTE r_mean", r_mean, " r_sd", r_sd, " K =", K_all, " Num_sims =", number_of_simulations, ".csv"))
+write.csv(Time_to_extinction_df, file = paste0("./output/time_to_extinction_df/TTE r_mean ", r_mean[Multiple_r_scenarios], " r_sd", r_sd, " K =", K_all[Multiple_K_scenarios], " Num_sims =", number_of_simulations, ".csv"))
 
 ?write.csv
 ###Histogram
-plot_title <- paste0("Histogram r_mean = ", r_mean, ", r_sd = ", r_sd, ", K =", K_all, " Num_sims =", number_of_simulations)
+plot_title <- paste0("Histogram r_mean = ", r_mean[Multiple_r_scenarios], ", r_sd = ", r_sd, ", K =", K_all[Multiple_K_scenarios], " Num_sims =", number_of_simulations)
 
 Time_to_extinction_plot <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
   geom_histogram(colour = "Black", bins = nrow(Model_output))+
@@ -276,7 +281,7 @@ Time_to_extinction_plot
 ggsave(paste0("./output/figures/r_theta/", plot_title, ".png"), width = 10, height = 6)
 
 ###Frequency histogram
-plot_title <- paste0("Frequency r_mean = ", r_mean, ", r_sd = ", r_sd, ", K =", K_all, " Num_sims =", number_of_simulations)
+plot_title <- paste0("Frequency r_mean = ", r_mean[Multiple_r_scenarios], ", r_sd = ", r_sd, ", K =", K_all[Multiple_K_scenarios], " Num_sims =", number_of_simulations)
 
 Time_to_extinction_freq <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
   geom_freqpoly(colour = "Black", bins = nrow(Model_output)/10)+
@@ -293,6 +298,10 @@ Time_to_extinction_freq <- Time_to_extinction_freq + theme(
 Time_to_extinction_freq
 
 ggsave(paste0("./output/figures/r_theta/", plot_title, ".png"), width = 10, height = 6)
+
+
+  } #closing multiple K scenarios
+} #closing multiple r scenarios
 
 
 proc.time() - full.run.time
