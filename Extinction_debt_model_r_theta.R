@@ -41,10 +41,10 @@ pnorm(0,mean=0.2, sd=0.35) #calculate percent of bad years (where r< 0) given me
 ########################################################################
 ########################################################################
 #[1] Defining Model Parameters
-number_of_simulations <- 10000  #How many simulations to do
+number_of_simulations <- 5000  #How many simulations to do
 years_each_run <- 500 #How long should each simulation run for
 
-r_mean <- 0.2 #r grows at "x" percent per time step
+r_mean <- 0.18 #r grows at "x" percent per time step
 
 r_sd <- 0.35
 
@@ -253,12 +253,14 @@ else if (simulation_dummy == ceiling(number_of_simulations)){
 #[8] Plotting time to extinction across model simulations
 
 Time_to_extinction_df <- as.data.frame(time_quasi_extinct)
+write.csv(Time_to_extinction_df, file = paste0("./output/time_to_extinction_df/TTE r_mean", r_mean, " r_sd", r_sd, " K =", K_all, " Num_sims =", number_of_simulations, ".csv"))
 
+?write.csv
 ###Histogram
-plot_title <- paste0("Histogram r_mean = ", r_mean, "r_sd = ", r_sd, ", K =", K_all, " Num_sims =", number_of_simulations)
+plot_title <- paste0("Histogram r_mean = ", r_mean, ", r_sd = ", r_sd, ", K =", K_all, " Num_sims =", number_of_simulations)
 
 Time_to_extinction_plot <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
-  geom_histogram(colour = "Black", bins = nrow(Model_output)/4)+
+  geom_histogram(colour = "Black", bins = nrow(Model_output))+
   labs(title = plot_title, x = "Time to extinction", y = "Frequency")
 
 Time_to_extinction_plot <- Time_to_extinction_plot + theme(
@@ -274,7 +276,7 @@ Time_to_extinction_plot
 ggsave(paste0("./output/figures/r_theta/", plot_title, ".png"), width = 10, height = 6)
 
 ###Frequency histogram
-plot_title <- paste0("Frequency r_mean = ", r_mean, "r_sd = ", r_sd, ", K =", K_all, " Num_sims =", number_of_simulations)
+plot_title <- paste0("Frequency r_mean = ", r_mean, ", r_sd = ", r_sd, ", K =", K_all, " Num_sims =", number_of_simulations)
 
 Time_to_extinction_freq <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
   geom_freqpoly(colour = "Black", bins = nrow(Model_output)/10)+
