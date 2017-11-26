@@ -34,57 +34,52 @@ require(ggplot2)
 rm(list=ls())
 full.run.time <- proc.time() # time for one run-through
 
+pnorm(0,mean=0.2, sd=0.4) #calculate percent of bad years (where r< 0) given mean and sd
+
+number_of_simulations <- 1000
 
 ########################################################################
 ########################################################################
-#[1] Defining number of simulations you will be running
-
-pnorm(0,mean=0.05,sd=0.2) #calculate percent of bad years (where r< 0) given mean and sd
+#[2] Defining number of simulations you will be running
 
 time_quasi_extinct <- NULL #Time to quasi-extinction vector
-number_of_simulations <- 100
-
 for (time_loop in 1:number_of_simulations){ #defines number of simulations to run
 
 ########################################################################
 ########################################################################
-#[2] Defining model parameters
-
-#How do you want the r to vary over time? (r > 0 = population increasing, r < 0 = population decreasing)
-
+#[1] Defining model parameters
+  
 #For different r in each patch
 r_list <- c("rA_loop", "rB_loop", "rC_loop", "rD_loop")
 for (r_listing in 1:length(r_list)){
-r_mean <- 0.05 #r grows at "x" percent per time step
-r_loop <- rnorm(500, mean = r_mean, sd = 0.5) #this is a poisson where the mean = variance?
-assign(r_list[r_listing], r_loop)
-}
+r_mean <- 0.2 #r grows at "x" percent per time step
+r_loop <- rnorm(500, mean = r_mean, sd = 0.35) 
+assign(r_list[r_listing], r_loop)}
 
 
+#Defining K
+K_all <- 5000
+  
+  
 #Setting up dataframe to capture intial and final population sizes to feed into runs when you loop
 population_loop <- matrix(0, nrow = length(r_loop), ncol = 4)
-
 #These are the initial population sizes for the different patches
-population_loop[1,1] <- 500/4 
-population_loop[1,2] <- 500/4
-population_loop[1,3] <- 500/4
-population_loop[1,4] <- 500/4
-
+population_loop[1,1] <- K_all/2 
+population_loop[1,2] <- K_all/2
+population_loop[1,3] <- K_all/2
+population_loop[1,4] <- K_all/2
+  
 #This a a vector that I'm using to give names to the different loop outputs
 Model_output_names <- NULL
-for (i in 1:length(r_loop)){
-Model_output_names[i] <- append(paste0("loop_", i), Model_output_names)
-}
-
-
+for (i in 1:length(r_loop)){Model_output_names[i] <- append(paste0("loop_", i), Model_output_names)}
+  
 #How long should each loop run for?
 time_of_loop <- 1
-
+  
 rm(r_list, r_listing) #removing usless variables
-########################################################################
+#######################################################################
 ########################################################################
 #[3] Building model structure
-
 for (i in 1:length(r_loop)){
 
 ##### Model description  #####
@@ -106,15 +101,19 @@ SISmodel=function(t,y,parameters){
   m_CD = parameters[11];  
   m_DA = parameters[12];  
   m_DC = parameters[13]; 
+  theta_A = parameters[14];
+  theta_B = parameters[15];
+  theta_C = parameters[16];
+  theta_D = parameters[17];
   
   ## Ordinary differential equations
-  dS1_Adt <- rA*S1_A*(1 - S1_A/K) + S1_B*m_BA + S1_D*m_DA - S1_A*(m_AB + m_AD)
+  dS1_Adt <- rA*S1_A*(1 - S1_A/K)^theta_A + S1_B*m_BA + S1_D*m_DA - S1_A*(m_AB + m_AD)
   
-  dS1_Bdt <- rB*S1_B*(1 - S1_B/K) + S1_A*m_AB + S1_C*m_CB - S1_B*(m_BA + m_BC)
+  dS1_Bdt <- rB*S1_B*(1 - S1_B/K)^theta_B + S1_A*m_AB + S1_C*m_CB - S1_B*(m_BA + m_BC)
   
-  dS1_Cdt <- rC*S1_C*(1 - S1_C/K) + S1_B*m_BC + S1_D*m_DC - S1_C*(m_CB + m_DC)
+  dS1_Cdt <- rC*S1_C*(1 - S1_C/K)^theta_C + S1_B*m_BC + S1_D*m_DC - S1_C*(m_CB + m_DC)
   
-  dS1_Ddt <- rD*S1_D*(1 - S1_D/K) + S1_A*m_AD + S1_C*m_CD - S1_D*(m_DA + m_DC)
+  dS1_Ddt <- rD*S1_D*(1 - S1_D/K)^theta_D + S1_A*m_AD + S1_C*m_CD - S1_D*(m_DA + m_DC)
   
   
   return(list(c(dS1_Adt,
@@ -128,8 +127,8 @@ rA <- rA_loop[i] #r value will change with each loop
 rB <- rB_loop[i]
 rC <- rC_loop[i]
 rD <- rD_loop[i]
-K <- 500
-m_AB <- 0.0001 #Setting all migration rates equal
+K <- K_all
+m_AB <- 0.005 #Setting all migration rates equal
 m_AD = m_AB
 m_BA = m_AB
 m_BC = m_AB
@@ -137,8 +136,10 @@ m_CB = m_AB
 m_CD = m_AB
 m_DA = m_AB
 m_DC = m_AB
-
-
+if (rA_loop[i] >= 0){theta_A = 1}else (theta_A = 0)
+if (rB_loop[i] >= 0){theta_B = 1}else (theta_B = 0)
+if (rC_loop[i] >= 0){theta_C = 1}else (theta_C = 0)
+if (rD_loop[i] >= 0){theta_D = 1}else (theta_D = 0)
 
 ########################################################################
 ########################################################################
@@ -166,7 +167,11 @@ parameters=c(rA,
              m_CB,
              m_CD,
              m_DA,
-             m_DC)
+             m_DC,
+             theta_A,
+             theta_B,
+             theta_C,
+             theta_D)
 
 #Model run
 output=lsoda(y = variables0,    # intial values  
@@ -210,7 +215,7 @@ rm(list=ls(pattern="loop_")) #Removing needless loop files
 #[6] Getting time to extinction for a run
 
 for (i in 1:nrow(Model_output)){
-  if (Model_output[i,2] < K/20){
+  if (Model_output[i,2] < K/10){
     time_quasi_extinct <- append(time_quasi_extinct, Model_output[i,1])
     break
   } #don't need an else statement
