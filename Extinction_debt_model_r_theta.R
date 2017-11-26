@@ -13,13 +13,14 @@
 #
 
 ###################TABLE OF CONTENTS
-###[1] Defining number of simulations you will be running
-###[2] Defining model parameters
-###[3] Building model structure
-###[4] Running the model
-###[5] Getting model output into dataframe/plotting single simulation results
-###[6] Getting time to extinction for a run
-###[7] Plotting time to extinction across model simulations
+###[1] Defining model parameters
+###[2] Looping across simulations
+###[3] Looping model parameters
+###[4] Building model structure
+###[5] Running the model
+###[6] Getting model output into dataframe/plotting single simulation results
+###[7] Getting time to extinction for a run
+###[8] Plotting time to extinction across model simulations
 
 ###################Loading in libraries
 require(deSolve)
@@ -39,8 +40,9 @@ pnorm(0,mean=0.2, sd=0.35) #calculate percent of bad years (where r< 0) given me
 
 ########################################################################
 ########################################################################
-#[0] Defining Parameters
-number_of_simulations <- 10000
+#[1] Defining Model Parameters
+number_of_simulations <- 10000  #How many simulations to do
+years_each_run <- 500 #How long should each simulation run for
 
 r_mean <- 0.2 #r grows at "x" percent per time step
 
@@ -60,19 +62,19 @@ extinction_threshold <- K_all/10 #10% of carrying capacity
 
 ########################################################################
 ########################################################################
-#[1] Defining number of simulations you will be running
+#[2] Looping across simulations
 
 time_quasi_extinct <- NULL #Time to quasi-extinction vector
-for (time_loop in 1:number_of_simulations){ #defines number of simulations to run
+for (simulation_dummy in 1:number_of_simulations){
 
 ########################################################################
 ########################################################################
-#[2] Looping model parameters
+#[3] Looping model parameters
   
 #For different r in each patch
 r_list <- c("rA_loop", "rB_loop", "rC_loop", "rD_loop")
 for (r_listing in 1:length(r_list)){
-r_loop <- rnorm(500, mean = r_mean, sd = r_sd) 
+r_loop <- rnorm(years_each_run, mean = r_mean, sd = r_sd) 
 assign(r_list[r_listing], r_loop)}
 
 
@@ -88,11 +90,10 @@ population_loop[1,4] <- K_all/2
 Model_output_names <- NULL
 for (i in 1:length(r_loop)){Model_output_names[i] <- append(paste0("loop_", i), Model_output_names)}
 
-
 rm(r_list, r_listing) #removing usless variables
 #######################################################################
 ########################################################################
-#[3] Building model structure
+#[4] Building model structure
 for (i in 1:length(r_loop)){
 
 ##### Model description  #####
@@ -135,7 +136,7 @@ SISmodel=function(t,y,parameters){
                 dS1_Ddt))); 
 }  
 
-###[3b] Parameter values
+###[4b] Parameter values
 rA <- rA_loop[i] #r value will change with each loop
 rB <- rB_loop[i]
 rC <- rC_loop[i]
@@ -156,7 +157,7 @@ if (rD_loop[i] >= 0){theta_D = 1}else (theta_D = 0)
 
 ########################################################################
 ########################################################################
-#[4] Running the model
+#[5] Running the model
 
 #Initial state
 #Need to do this so that it takes the initial starting size the first time, and then the output from the last fun the next time
@@ -196,7 +197,7 @@ output=lsoda(y = variables0,    # intial values
 
 ########################################################################
 ########################################################################
-#[5] Getting model output into dataframe/plotting single simulation results
+#[6] Getting model output into dataframe/plotting single simulation results
 colnames(output)=c("time","S1_A", "S1_B", "S1_C", "S1_D")
 Metapop_model=as.data.frame(output)
 Metapop_model$loop_number <- i
@@ -225,7 +226,7 @@ Model_output$time <- 1:nrow(Model_output)
 rm(list=ls(pattern="loop_")) #Removing needless loop files
 ########################################################################
 ########################################################################
-#[6] Getting time to extinction for a run
+#[7] Getting time to extinction for a run
 
 for (i in 1:nrow(Model_output)){
   if (Model_output[i,2] < extinction_threshold){
@@ -235,21 +236,21 @@ for (i in 1:nrow(Model_output)){
 }
 
 ###Progress bar
-if (time_loop == ceiling(number_of_simulations*0.25)){
+if (simulation_dummy == ceiling(number_of_simulations*0.25)){
   print("25%")}
-else if (time_loop == ceiling(number_of_simulations*0.50)){
+else if (simulation_dummy == ceiling(number_of_simulations*0.50)){
   print("50%")}
-else if (time_loop == ceiling(number_of_simulations*0.75)){
+else if (simulation_dummy == ceiling(number_of_simulations*0.75)){
   print("75%")}
-else if (time_loop == ceiling(number_of_simulations)){
+else if (simulation_dummy == ceiling(number_of_simulations)){
   print("Done")}
 
-} #closing time_loop
+} #closing simulation loop
 
 
 ########################################################################
 ########################################################################
-#[7] Plotting time to extinction across model simulations
+#[8] Plotting time to extinction across model simulations
 
 Time_to_extinction_df <- as.data.frame(time_quasi_extinct)
 
@@ -270,7 +271,7 @@ Time_to_extinction_plot <- Time_to_extinction_plot + theme(
 )
 Time_to_extinction_plot
 
-ggsave(paste0("./output/figures/", plot_title, ".png"), width = 10, height = 6)
+ggsave(paste0("./output/figures/r_theta/", plot_title, ".png"), width = 10, height = 6)
 
 ###Frequency histogram
 plot_title <- paste0("Frequency r_mean = ", r_mean, "r_sd = ", r_sd, ", K =", K_all, " Num_sims =", number_of_simulations)
@@ -289,7 +290,7 @@ Time_to_extinction_freq <- Time_to_extinction_freq + theme(
 )
 Time_to_extinction_freq
 
-ggsave(paste0("./output/figures/", plot_title, ".png"), width = 10, height = 6)
+ggsave(paste0("./output/figures/r_theta/", plot_title, ".png"), width = 10, height = 6)
 
 
 proc.time() - full.run.time
@@ -299,11 +300,3 @@ proc.time() - full.run.time
 ##
 #END
 
-
-
-
-
-
-#Extra
-#length(time_quasi_extinct)
-#hist(time_quasi_extinct, breaks = length(time_quasi_extinct)) 
