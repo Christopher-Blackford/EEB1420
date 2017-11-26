@@ -34,7 +34,7 @@ require(ggplot2)
 rm(list=ls())
 full.run.time <- proc.time() # time for one run-through
 
-pnorm(0,mean=0.2, sd=0.4) #calculate percent of bad years (where r< 0) given mean and sd
+pnorm(0,mean=0.2, sd=0.35) #calculate percent of bad years (where r< 0) given mean and sd
 
 number_of_simulations <- 1000
 
@@ -244,7 +244,7 @@ Time_to_extinction_df <- as.data.frame(time_quasi_extinct)
 plot_title <- paste0("Histogram r_mean = ", r_mean, ", K =", K, " Num_sims =", number_of_simulations)
 
 Time_to_extinction_plot <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
-  geom_histogram(colour = "Black", bins = nrow(Model_output)/2)+
+  geom_histogram(colour = "Black", bins = nrow(Model_output)/4)+
   labs(title = plot_title, x = "Time to extinction", y = "Frequency")
 
 Time_to_extinction_plot <- Time_to_extinction_plot + theme(
