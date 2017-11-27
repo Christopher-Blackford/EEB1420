@@ -41,18 +41,18 @@ pnorm(0,mean=0.2, sd=0.35) #calculate percent of bad years (where r< 0) given me
 ########################################################################
 ########################################################################
 #[1] Defining Model Parameters
-number_of_simulations <- 10000  #How many simulations to do
+number_of_simulations <- 5000  #How many simulations to do
 years_each_run <- 500 #How long should each simulation run for
 
-r_mean <- c(0.15, 0.10) #r grows at "x" percent per time step
+r_mean <- c(0.2, 0.15, 0.10) #r grows at "x" percent per time step
 
 r_sd <- 0.35
 
 #Defining K
-K_all <- c(5000, 4500, 37500, 2500)
+K_all <- c(5000, 3750, 2500)
 
 #Defining m (migration)
-m_all <- 0.005
+m_all <- 0.025
 
 #How long should each loop run for?
 time_of_loop <- 1
@@ -262,7 +262,7 @@ write.csv(Time_to_extinction_df, file = paste0("./output/time_to_extinction_df/T
 
 ?write.csv
 ###Histogram
-plot_title <- paste0("Histogram r_mean = ", r_mean[Multiple_r_scenarios], ", r_sd = ", r_sd, ", K =", K_all[Multiple_K_scenarios], " Num_sims =", number_of_simulations)
+plot_title <- paste0("Hist r_mean = ", r_mean[Multiple_r_scenarios], ", r_sd = ", r_sd, ", K =", K_all[Multiple_K_scenarios], " m =",  m_all, "Num_sims =", number_of_simulations)
 
 Time_to_extinction_plot <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
   geom_histogram(colour = "Black", bins = nrow(Model_output))+
@@ -281,7 +281,7 @@ Time_to_extinction_plot
 ggsave(paste0("./output/figures/r_theta/", plot_title, ".png"), width = 10, height = 6)
 
 ###Frequency histogram
-plot_title <- paste0("Frequency r_mean = ", r_mean[Multiple_r_scenarios], ", r_sd = ", r_sd, ", K =", K_all[Multiple_K_scenarios], " Num_sims =", number_of_simulations)
+plot_title <- paste0("Freq r_mean = ", r_mean[Multiple_r_scenarios], ", r_sd = ", r_sd, ", K =", K_all[Multiple_K_scenarios], " m =",  m_all, " Num_sims =", number_of_simulations)
 
 Time_to_extinction_freq <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
   geom_freqpoly(colour = "Black", bins = nrow(Model_output)/10)+
