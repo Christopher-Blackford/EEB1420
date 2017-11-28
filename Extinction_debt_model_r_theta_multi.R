@@ -44,7 +44,7 @@ pnorm(0,mean=0.2, sd=0.35) #calculate percent of bad years (where r< 0) given me
 number_of_simulations <- 5000  #How many simulations to do
 years_each_run <- 500 #How long should each simulation run for
 
-r_mean <- c(0.15, 0.10) #r grows at "x" percent per time step
+r_mean <- c(0.2, 0.15, 0.10) #r grows at "x" percent per time step
 
 r_sd <- 0.35
 
@@ -52,7 +52,7 @@ r_sd <- 0.35
 K_all <- c(5000, 3750, 2500)
 
 #Defining m (migration)
-m_all <- 0.005
+m_all <- 0.025
 
 #How long should each loop run for?
 time_of_loop <- 1
