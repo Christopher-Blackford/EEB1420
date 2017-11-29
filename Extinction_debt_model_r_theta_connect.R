@@ -41,8 +41,7 @@ pnorm(0,mean=0.2, sd=0.35) #calculate percent of bad years (where r< 0) given me
 ########################################################################
 ########################################################################
 #[1] Defining Model Parameters
-number_of_simulations <- 5
-00  #How many simulations to do
+number_of_simulations <- 5000 #How many simulations to do
 years_each_run <- 500 #How long should each simulation run for
 
 r_mean <- c(0.2) #r grows at "x" percent per time step
@@ -53,7 +52,7 @@ r_sd <- 0.35
 K_all <- c(5000)
 
 #Defining m (migration)
-m_all <- 0.005
+m_all <- 0.025
 
 #How long should each loop run for?
 time_of_loop <- 1
@@ -256,7 +255,7 @@ else if (simulation_dummy == ceiling(number_of_simulations)){
 ########################################################################
 ########################################################################
 #[8] Plotting time to extinction across model simulations
-base_title <- paste0("r_mean=", r_mean[Multiple_r_scenarios], " r_sd=", r_sd, " K=", K_all[Multiple_K_scenarios], " m=", m_all, "m_AlinkB", m_AB, " m_AlinkD", m_DA, " Num_sims=", number_of_simulations)
+base_title <- paste0("r_mean=", r_mean[Multiple_r_scenarios], " r_sd=", r_sd, " K=", K_all[Multiple_K_scenarios], " m=", m_all, "m_AlinkB", m_AB, " Num_sims=", number_of_simulations)
 base_title
 
 Time_to_extinction_df <- as.data.frame(time_quasi_extinct)
