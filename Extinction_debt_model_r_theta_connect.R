@@ -41,18 +41,19 @@ pnorm(0,mean=0.2, sd=0.35) #calculate percent of bad years (where r< 0) given me
 ########################################################################
 ########################################################################
 #[1] Defining Model Parameters
-number_of_simulations <- 10  #How many simulations to do
+number_of_simulations <- 5
+00  #How many simulations to do
 years_each_run <- 500 #How long should each simulation run for
 
-r_mean <- c(0.2, 0.15, 0.10) #r grows at "x" percent per time step
+r_mean <- c(0.2) #r grows at "x" percent per time step
 
 r_sd <- 0.35
 
 #Defining K
-K_all <- c(5000, 3750, 2500)
+K_all <- c(5000)
 
 #Defining m (migration)
-m_all <- 0.05
+m_all <- 0.005
 
 #How long should each loop run for?
 time_of_loop <- 1
@@ -64,7 +65,6 @@ extinction_threshold <- 500 #10% of carrying capacity
 for (Multiple_r_scenarios in 1:length(r_mean)){
   for (Multiple_K_scenarios in 1:length(K_all)){
     
-
 ########################################################################
 ########################################################################
 #[2] Looping across simulations
@@ -147,14 +147,14 @@ rB <- rB_loop[i]
 rC <- rC_loop[i]
 rD <- rD_loop[i]
 K <- K_all[Multiple_K_scenarios]
-m_AB <- m_all #Setting all migration rates equal
-m_AD = m_AB
-m_BA = m_AB
-m_BC = m_AB
-m_CB = m_AB
-m_CD = m_AB
-m_DA = m_AB
-m_DC = m_AB
+m_AB <- 0 #Setting all migration rates equal
+m_BA <- 0
+m_AD = m_all
+m_BC = m_all
+m_CB = m_all
+m_CD = m_all
+m_DA = m_all
+m_DC = m_all
 if (rA_loop[i] >= 0){theta_A = 1}else (theta_A = 0)
 if (rB_loop[i] >= 0){theta_B = 1}else (theta_B = 0)
 if (rC_loop[i] >= 0){theta_C = 1}else (theta_C = 0)
@@ -256,7 +256,7 @@ else if (simulation_dummy == ceiling(number_of_simulations)){
 ########################################################################
 ########################################################################
 #[8] Plotting time to extinction across model simulations
-base_title <- paste0("r_mean=", r_mean[Multiple_r_scenarios], " r_sd=", r_sd, " K=", K_all[Multiple_K_scenarios], " m=", m_all, " Num_sims=", number_of_simulations)
+base_title <- paste0("r_mean=", r_mean[Multiple_r_scenarios], " r_sd=", r_sd, " K=", K_all[Multiple_K_scenarios], " m=", m_all, "m_AlinkB", m_AB, " m_AlinkD", m_DA, " Num_sims=", number_of_simulations)
 base_title
 
 Time_to_extinction_df <- as.data.frame(time_quasi_extinct)
