@@ -11,7 +11,7 @@
 # Metapopulation connectivity
 #
 #
-dis_one<-0.025
+
 ###################TABLE OF CONTENTS
 ###[1] Defining model parameters
 ###[2] Looping across simulations
@@ -36,7 +36,7 @@ rm(list=ls())
 full.run.time <- proc.time() # time for one run-through
 
 pnorm(0,mean=0.2, sd=0.35) #calculate percent of bad years (where r< 0) given mean and sd
-
+dis_one<-0.025
 ########################################################################
 ########################################################################
 #[1] Defining Model Parameters
@@ -48,10 +48,10 @@ r_mean <- c(0.2) #r grows at "x" percent per time step
 r_sd <- 0.35
 
 #Defining K
-K_base <- c(5000, 2500)
-K_A_all <- c(K_base[1]*0.23, K_base[2]*0.23)
-K_B_all <- c(K_base[1]*1.18, K_base[2]*1.18)
-K_C_all <- c(K_base[1]*0.36, K_base[2]*0.36)
+K_base <- c(2500)
+K_A_all <- c(K_base[1]*0.23)
+K_B_all <- c(K_base[1]*1.18)
+K_C_all <- c(K_base[1]*0.36)
 #pond A = 0.23km2, pond B = 1.18 km2, pond C = 0.36km2
 
 #How long should each loop run for?
