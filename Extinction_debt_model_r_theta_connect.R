@@ -52,7 +52,7 @@ r_sd <- 0.35
 K_all <- c(5000)
 
 #Defining m (migration)
-m_all <- 0.025
+m_all <- 0.005
 
 #How long should each loop run for?
 time_of_loop <- 1
