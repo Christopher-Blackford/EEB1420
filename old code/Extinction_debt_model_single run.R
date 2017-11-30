@@ -41,8 +41,7 @@ pnorm(0,mean=0.2, sd=0.35) #calculate percent of bad years (where r< 0) given me
 ########################################################################
 ########################################################################
 #[1] Defining Model Parameters
-number_of_simulations <- 10000  #How many simulations to do
-years_each_run <- 500 #How long should each simulation run for
+years_each_run <- 200 #How long should each simulation run for
 
 r_mean <- 0.18 #r grows at "x" percent per time step
 
@@ -59,13 +58,6 @@ time_of_loop <- 1
 
 #Quasi-extinction threshold
 extinction_threshold <- K_all/10 #10% of carrying capacity
-
-########################################################################
-########################################################################
-#[2] Looping across simulations
-
-time_quasi_extinct <- NULL #Time to quasi-extinction vector
-for (simulation_dummy in 1:number_of_simulations){
 
 ########################################################################
 ########################################################################
@@ -225,75 +217,40 @@ Model_output$time <- 1:nrow(Model_output)
 
 rm(list=ls(pattern="loop_")) #Removing needless loop files
 ########################################################################
-########################################################################
-#[7] Getting time to extinction for a run
 
 for (i in 1:nrow(Model_output)){
-  if (Model_output[i,2] < extinction_threshold){
-    time_quasi_extinct <- append(time_quasi_extinct, Model_output[i,1])
+  if (Model_output[i,2] < 500){
+    print("yes")
     break
   } #don't need an else statement
 }
 
-###Progress bar
-if (simulation_dummy == ceiling(number_of_simulations*0.25)){
-  print("25%")}
-else if (simulation_dummy == ceiling(number_of_simulations*0.50)){
-  print("50%")}
-else if (simulation_dummy == ceiling(number_of_simulations*0.75)){
-  print("75%")}
-else if (simulation_dummy == ceiling(number_of_simulations)){
-  print("Done")}
-
-} #closing simulation loop
-
-
 ########################################################################
 ########################################################################
-#[8] Plotting time to extinction across model simulations
+#[8] Plotting time to extinction 
 
-Time_to_extinction_df <- as.data.frame(time_quasi_extinct)
-write.csv(Time_to_extinction_df, file = paste0("./output/time_to_extinction_df/TTE r_mean", r_mean, " r_sd", r_sd, " K =", K_all, " Num_sims =", number_of_simulations, ".csv"))
 
-?write.csv
-###Histogram
-plot_title <- paste0("Histogram r_mean = ", r_mean, ", r_sd = ", r_sd, ", K =", K_all, " Num_sims =", number_of_simulations)
+test2 <- Model_output[1:75,]
+#Building plot with data
 
-Time_to_extinction_plot <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
-  geom_histogram(colour = "Black", bins = nrow(Model_output))+
-  labs(title = plot_title, x = "Time to extinction", y = "Frequency")
 
-Time_to_extinction_plot <- Time_to_extinction_plot + theme(
+Linear_plot <- ggplot(test2, aes(time)) +
+  geom_line(aes(y = S1_A, colour = "Susceptibles"), colour = "black") + 
+  labs(x = "Time", y = "Population size")
+Linear_plot
+
+#Setting theme for plot
+Linear_plot <- Linear_plot + theme(
   plot.title = element_text(size = 16), 
-  axis.text = element_text(size = 14),
-  axis.title = element_text(size = 14),
+  axis.text = element_text(size = 16),
+  axis.title = element_text(size = 16),
   axis.line = element_line("black"),
   legend.title = element_blank(),
   panel.background = element_blank()
 )
-Time_to_extinction_plot
 
-ggsave(paste0("./output/figures/r_theta/", plot_title, ".png"), width = 10, height = 6)
-
-###Frequency histogram
-plot_title <- paste0("Frequency r_mean = ", r_mean, ", r_sd = ", r_sd, ", K =", K_all, " Num_sims =", number_of_simulations)
-
-Time_to_extinction_freq <- ggplot(Time_to_extinction_df, aes(time_quasi_extinct)) +
-  geom_freqpoly(colour = "Black", bins = nrow(Model_output)/10)+
-  labs(title = plot_title, x = "Time to extinction", y = "Frequency")
-
-Time_to_extinction_freq <- Time_to_extinction_freq + theme(
-  plot.title = element_text(size = 16), 
-  axis.text = element_text(size = 14),
-  axis.title = element_text(size = 14),
-  axis.line = element_line("black"),
-  legend.title = element_blank(),
-  panel.background = element_blank()
-)
-Time_to_extinction_freq
-
-ggsave(paste0("./output/figures/r_theta/", plot_title, ".png"), width = 10, height = 6)
-
+Linear_plot
+ggsave("./single_run.png", width = 10, height = 6)
 
 proc.time() - full.run.time
 #####
