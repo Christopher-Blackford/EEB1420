@@ -41,18 +41,18 @@ pnorm(0,mean=0.2, sd=0.35) #calculate percent of bad years (where r< 0) given me
 ########################################################################
 ########################################################################
 #[1] Defining Model Parameters
-number_of_simulations <- 10  #How many simulations to do
-years_each_run <- 500 #How long should each simulation run for
+number_of_simulations <- 100000 #How many simulations to do
+years_each_run <- 1000 #How long should each simulation run for
 
-r_mean <- c(0.2, 0.15, 0.10) #r grows at "x" percent per time step
+r_mean <- c(0.2) #r grows at "x" percent per time step
 
 r_sd <- 0.35
 
 #Defining K
-K_all <- c(5000, 3750, 2500)
+K_all <- c(5000)
 
 #Defining m (migration)
-m_all <- 0.05
+m_all <- 0.025
 
 #How long should each loop run for?
 time_of_loop <- 1
