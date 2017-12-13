@@ -42,7 +42,7 @@ pnorm(0,mean=0.2, sd=0.35) #calculate percent of bad years (where r< 0) given me
 ########################################################################
 #[1] Defining Model Parameters
 number_of_simulations <- 250000 #How many simulations to do
-years_each_run <- 2000 #How long should each simulation run for
+years_each_run <- 1500 #How long should each simulation run for
 
 r_mean <- c(0.2) #r grows at "x" percent per time step
 
@@ -240,18 +240,20 @@ for (i in 1:nrow(Model_output)){
   } #don't need an else statement
 }
 
-###Progress bar
+###Progress bar and temporary saves
 if (simulation_dummy == ceiling(number_of_simulations*0.25)){
-  print("25%")}
+  print("25%")
+  write.csv(as.data.frame(time_quasi_extinct), file = "./output/25percent.csv")}
 else if (simulation_dummy == ceiling(number_of_simulations*0.50)){
-  print("50%")}
+  print("50%")
+  write.csv(as.data.frame(time_quasi_extinct), file = "./output/50percent.csv")}
 else if (simulation_dummy == ceiling(number_of_simulations*0.75)){
-  print("75%")}
+  print("75%")
+  write.csv(as.data.frame(time_quasi_extinct), file = "./output/75percent.csv")}
 else if (simulation_dummy == ceiling(number_of_simulations)){
   print("Done")}
 
 } #closing simulation loop
-
 
 ########################################################################
 ########################################################################
